@@ -55,8 +55,12 @@ struct mod_s
   mod_new_t mod_data;
   mod_pattern_data_t patterns[128];
   u8 samples[32][2 * 65536];
+  s32 sample_count;
+  s32 pattern_count;
 };
 
 extern void mod_load(const c8 *filename);
+extern void mod_process(void);
+extern void mod_save(const c8 *filename);
 
 #endif /* _MOD_H_ */
