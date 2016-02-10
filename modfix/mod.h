@@ -54,7 +54,7 @@ struct mod_s
 {
   mod_new_t mod_data;
   mod_pattern_data_t patterns[128];
-  u8 samples[32][2 * 65536];
+  s8 samples[32][2 * 65536];
   s32 sample_count;
   s32 pattern_count;
 };

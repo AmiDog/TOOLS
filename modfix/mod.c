@@ -56,6 +56,62 @@ void mod_save(const c8 *filename)
   }
 }
 
+static s32 append_loop(s32 entry, s32 repeat_length, s32 repeat_offset, s32 length_in_words)
+{
+  s32 i;
+  for (i = 0; i < repeat_length; i++)
+  {
+    main_mod.samples[entry][(length_in_words * 2) + 0] = main_mod.samples[entry][(repeat_offset * 2) + (i * 2) + 0];
+    main_mod.samples[entry][(length_in_words * 2) + 1] = main_mod.samples[entry][(repeat_offset * 2) + (i * 2) + 1];
+    length_in_words++;
+  }
+  return length_in_words;
+}
+
+static s32 fade_loop(s32 entry, s32 repeat_length, s32 repeat_offset, s32 length_in_words, s32 fade_length)
+{
+  s32 i;
+#if 0
+  for (i = -50; i < 0; i++)
+  {
+    printf("end %d\n", main_mod.samples[entry][(length_in_words * 2) + i]);
+  }
+  for (i = -50; i < 0; i++)
+  {
+    printf("xxx %d\n", main_mod.samples[entry][((repeat_offset + repeat_length) * 2) + i]);
+  }
+  for (i = 0; i < 50; i++)
+  {
+    printf("rep %d\n", main_mod.samples[entry][(repeat_offset * 2) + i]);
+  }
+#endif
+#if 0
+  s32 j;
+  for (i = 0, j = 0; i < fade_length; i++)
+  {
+    main_mod.samples[entry][(length_in_words * 2) + 0] = (main_mod.samples[entry][(repeat_offset * 2) + (j * 2) + 0] * (fade_length - i)) / fade_length;
+    main_mod.samples[entry][(length_in_words * 2) + 1] = (main_mod.samples[entry][(repeat_offset * 2) + (j * 2) + 1] * (fade_length - i)) / fade_length;
+    j++;
+    if (j >= repeat_length)
+    {
+      j = 0;
+    }
+    //printf("fade: %d, %d, %d: %d: %d, %d\n", max, i, (max - i), ((100 * (max - i)) / max), main_mod.samples[entry][(length_in_words * 2) + 0], main_mod.samples[entry][(length_in_words * 2) + 1]);
+    length_in_words++;
+  }
+#else
+  for (i = 0; i < repeat_length; i++)
+  {
+    main_mod.samples[entry][(length_in_words * 2) + 0] = (main_mod.samples[entry][(repeat_offset * 2) + (i * 2) + 0] * (repeat_length - i)) / repeat_length;
+    main_mod.samples[entry][(length_in_words * 2) + 1] = (main_mod.samples[entry][(repeat_offset * 2) + (i * 2) + 1] * (repeat_length - i)) / repeat_length;
+    //printf("fade: %d, %d, %d: %d: %d, %d\n", max, i, (max - i), ((100 * (max - i)) / max), main_mod.samples[entry][(length_in_words * 2) + 0], main_mod.samples[entry][(length_in_words * 2) + 1]);
+    length_in_words++;
+  }
+#endif
+  return length_in_words;
+  (void)fade_length;
+}
+
 static void remove_loops(void)
 {
   s32 i;
@@ -63,13 +119,31 @@ static void remove_loops(void)
   {
     s32 repeat_length = get_word(main_mod.mod_data.sample[i].repeat_length);
     s32 repeat_offset = get_word(main_mod.mod_data.sample[i].repeat_offset);
+    s32 length_in_words = get_word(main_mod.mod_data.sample[i].length_in_words);
     if (repeat_length > 1)
     {
-      printf("removing loop for sample %d, length: %d, offset: %d\n", i, repeat_length, repeat_offset);
+      printf("removing loop for sample %d, repeat length: %d, repeat offset: %d, sample length %d\n", i, repeat_length, repeat_offset, length_in_words);
       set_word(main_mod.mod_data.sample[i].repeat_length, 1);
       set_word(main_mod.mod_data.sample[i].repeat_offset, 0);
+
+      // docs says to play full sample once, but that causes clicks (and makes sample look weird). this fixes it.does fix those clicks.
+      length_in_words = (repeat_offset + repeat_length);
+#if 1
+      while (length_in_words < 8192)
+      {
+        length_in_words = append_loop(i, repeat_length, repeat_offset, length_in_words);
+      }
+#endif
+
+#if 1
+      length_in_words = fade_loop(i, repeat_length, repeat_offset, length_in_words, 4096);
+#endif
+
+      set_word(main_mod.mod_data.sample[i].length_in_words, length_in_words);
     }
   }
+  (void)append_loop;
+  (void)fade_loop;
 }
 
 void mod_process(void)
