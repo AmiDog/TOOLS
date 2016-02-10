@@ -16,7 +16,7 @@ CPR=$(CP) -r
 RM=rm -rf
 
 # object
-OBJFILE=$(addprefix obj/, main.o)
+OBJFILE=$(addprefix obj/, mod.o main.o)
 
 # binary
 BINFILE=bin/modfix.exe

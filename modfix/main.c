@@ -2,9 +2,13 @@
  * main.c
  */
 
-#include "types.h"
+#include "mod.h"
 
-int main(void)
+int main(int argc, char **argv)
 {
+  if (argc == 2)
+  {
+    mod_load(argv[1]);
+  }
   return 0;
 }
