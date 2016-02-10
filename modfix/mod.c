@@ -17,15 +17,29 @@ static void dump_sample(s32 entry, mod_sample_t *sample)
     entry,
     sample->name,
     get_word(sample->length_in_words),
-    sample->finetune[0],
+    ((s8)(sample->finetune[0] << 4)) >> 4,
     sample->volume[0],
     get_word(sample->repeat_offset),
     get_word(sample->repeat_length));
 }
 
-static void mod_save(mod_t * mod)
+static void mod_save(const c8 *filename, mod_t * mod)
 {
+  (void)filename;
   (void)mod;
+}
+
+static void remove_loops(s32 sample_count)
+{
+  s32 i;
+  for (i = 0; i < sample_count; i++)
+  {
+    s32 repeat_length = get_word(main_mod.mod_data.sample[i].repeat_length);
+    if (repeat_length > 1)
+    {
+      printf("removing loop for sample %d\n", i);
+    }
+  }
 }
 
 void mod_load(const c8 *filename)
@@ -88,6 +102,7 @@ void mod_load(const c8 *filename)
 
     fclose(fp);
 
-    mod_save(&main_mod);
+    remove_loops(sample_count);
+    mod_save("../../test.mod", &main_mod);
   }
 }
