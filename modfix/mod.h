@@ -7,18 +7,45 @@
 
 #include "types.h"
 
+typedef union mod_channel_data_u mod_channel_data_t;
+typedef struct mod_division_data_s mod_division_data_t;
+typedef struct mod_pattern_data_s mod_pattern_data_t;
+
 typedef struct mod_new_s mod_new_t;
 typedef struct mod_old_s mod_old_t;
 typedef struct mod_sample_s mod_sample_t;
-typedef struct mod_pattern_data_s mod_pattern_data_t;
 typedef struct mod_s mod_t;
 
 #define SAMPLES_OLD (15)
 #define SAMPLES_NEW (31)
 
+union mod_channel_data_u
+{
+  struct
+  {
+#if 0
+    u32 sample_hi :  4;
+    u32 period    : 12;
+    u32 sample_lo :  4;
+    u32 effect    : 12;
+#else
+    u32 effect    : 12;
+    u32 sample_lo :  4;
+    u32 period    : 12;
+    u32 sample_hi :  4;
+#endif
+  } n;
+  u32 data;
+};
+
+struct mod_division_data_s
+{
+  mod_channel_data_t channel[4];
+};
+
 struct mod_pattern_data_s
 {
-  u8 data[1024];
+  mod_division_data_t division[64];
 };
 
 struct mod_sample_s
@@ -59,6 +86,7 @@ struct mod_s
   s32 pattern_count;
 };
 
+extern void mod_setup(void);
 extern void mod_load(const c8 *filename);
 extern void mod_process(void);
 extern void mod_save(const c8 *filename);

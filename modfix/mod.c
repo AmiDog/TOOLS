@@ -4,17 +4,82 @@
 
 #include "mod.h"
 
+static c8 periods[4096][4];
+
+static const struct
+{
+  s16 period;
+  const c8 *name;
+} octaves[] = {
+  { 1712, "C-0" }, { 1616, "C#0" }, { 1525, "D-0" }, { 1440, "D#0" }, { 1357, "E-0" }, { 1281, "F-0" }, { 1209, "F#0" }, { 1141, "G-0" }, { 1077, "G#0" }, { 1017, "A-0" }, {  961, "A#0" }, {  907, "B-0" },
+  {  856, "C-1" }, {  808, "C#1" }, {  762, "D-1" }, {  720, "D#1" }, {  678, "E-1" }, {  640, "F-1" }, {  604, "F#1" }, {  570, "G-1" }, {  538, "G#1" }, {  508, "A-1" }, {  480, "A#1" }, {  453, "B-1" },
+  {  428, "C-2" }, {  404, "C#2" }, {  381, "D-2" }, {  360, "D#2" }, {  339, "E-2" }, {  320, "F-2" }, {  302, "F#2" }, {  285, "G-2" }, {  269, "G#2" }, {  254, "A-2" }, {  240, "A#2" }, {  226, "B-2" },
+  {  214, "C-3" }, {  202, "C#3" }, {  190, "D-3" }, {  180, "D#3" }, {  170, "E-3" }, {  160, "F-3" }, {  151, "F#3" }, {  143, "G-3" }, {  135, "G#3" }, {  127, "A-3" }, {  120, "A#3" }, {  113, "B-3" },
+  {  107, "C-4" }, {  101, "C#4" }, {   95, "D-4" }, {   90, "D#4" }, {   85, "E-4" }, {   80, "F-4" }, {   76, "F#4" }, {   71, "G-4" }, {   67, "G#4" }, {   64, "A-4" }, {   60, "A#4" }, {   57, "B-4" },
+  {   -1, NULL }
+};
+
+static const c8 hex[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+void mod_setup(void)
+{
+  s32 i;
+  memset(periods, 0, sizeof(periods));
+  for (i = 1; i < 4096; i++)
+  {
+    strncpy(periods[i], "???", 3);
+  }
+  for (i = 0; octaves[i].name != NULL; i++)
+  {
+    strncpy(periods[octaves[i].period], octaves[i].name, 3);
+  }
+}
+
 static mod_t main_mod;
 
-static s32 get_word(u8 *ptr)
+static u32 get_long(u8 *ptr)
+{
+  return (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3] << 0);
+}
+
+static u32 get_word(u8 *ptr)
 {
   return (ptr[0] << 8) | (ptr[1] << 0);
 }
 
-static void set_word(u8 *ptr, s32 value)
+static void set_word(u8 *ptr, u32 value)
 {
   ptr[0] = (value >> 8) & 0xff;
   ptr[1] = (value >> 0) & 0xff;
+}
+
+static void dump_channel(mod_channel_data_t *channel)
+{
+  mod_channel_data_t chn;
+  chn.data = get_long((u8 *)&channel->data);
+  s32 sample = (chn.n.sample_hi << 4) | (chn.n.sample_lo << 0);
+  printf("| [%-3s] %2d [%c%c%c] |", periods[chn.n.period], sample,
+    hex[(chn.n.effect >> 8) & 15], hex[(chn.n.effect >> 4) & 15], hex[(chn.n.effect >> 0) & 15]);
+}
+
+static void dump_division(mod_division_data_t *division)
+{
+  s32 i;
+  for (i = 0; i < 4; i++)
+  {
+    dump_channel(&division->channel[i]);
+  }
+}
+
+static void dump_pattern(mod_pattern_data_t *pattern)
+{
+  s32 i;
+  for (i = 0; i < 64; i++)
+  {
+    printf("%2d: ", i);
+    dump_division(&pattern->division[i]);
+    printf("\n");
+  }
 }
 
 static void dump_sample(s32 entry, mod_sample_t *sample)
@@ -194,6 +259,9 @@ void mod_load(const c8 *filename)
     printf("pattern count: %d\n", main_mod.pattern_count);
 
     fread(&main_mod.patterns[0], 1, main_mod.pattern_count * sizeof(mod_pattern_data_t), fp);
+#if 1
+    dump_pattern(&main_mod.patterns[0]);
+#endif
 
     printf("at file position %d\n", (s32)ftell(fp));
     for (i = 0; i < main_mod.sample_count; i++)
