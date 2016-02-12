@@ -17,15 +17,13 @@ static const c8 mem_swl_be[4][4] =
   { 'i', 'j', 'k', 'E' }
 };
 
-static void swl_be(s32 vAddr)
+static void swl_be(c8 *mem, s32 vAddr)
 {
-  c8 mem[4] = { 'i', 'j', 'k', 'l' };
   s32 i, j;
   for (j = vAddr, i = 0; i <= (3 - vAddr); j++, i++)
   {
     mem[j] = reg_be[i];
   }
-  printf("vAddr %d: %c %c %c %c\n", vAddr, mem[0], mem[1], mem[2], mem[3]);
 }
 
 static const c8 mem_swr_be[4][4] =
@@ -36,15 +34,13 @@ static const c8 mem_swr_be[4][4] =
   { 'E', 'F', 'G', 'H' }
 };
 
-static void swr_be(s32 vAddr)
+static void swr_be(c8 *mem, s32 vAddr)
 {
-  c8 mem[4] = { 'i', 'j', 'k', 'l' };
   s32 i, j;
   for (j = 0, i = (3 - vAddr); i <= 3; j++, i++)
   {
     mem[j] = reg_be[i];
   }
-  printf("vAddr %d: %c %c %c %c\n", vAddr, mem[0], mem[1], mem[2], mem[3]);
 }
 
 static const c8 reg_le[4] =
@@ -60,15 +56,13 @@ static const c8 mem_swl_le[4][4] =
   { 'E', 'F', 'G', 'H' }
 };
 
-static void swl_le(s32 vAddr)
+static void swl_le(c8 *mem, s32 vAddr)
 {
-  c8 mem[4] = { 'i', 'j', 'k', 'l' };
   s32 i, j;
   for (j = (3 - vAddr), i = 0; i <= vAddr; j++, i++)
   {
     mem[j] = reg_be[i];
   }
-  printf("vAddr %d: %c %c %c %c\n", vAddr, mem[0], mem[1], mem[2], mem[3]);
 }
 
 static const c8 mem_swr_le[4][4] =
@@ -79,40 +73,43 @@ static const c8 mem_swr_le[4][4] =
   { 'H', 'j', 'k', 'l' }
 };
 
-static void swr_le(s32 vAddr)
+static void swr_le(c8 *mem, s32 vAddr)
 {
-  c8 mem[4] = { 'i', 'j', 'k', 'l' };
   s32 i, j;
   for (j = 0, i = vAddr; i <= 3; j++, i++)
   {
     mem[j] = reg_be[i];
   }
-  printf("vAddr %d: %c %c %c %c\n", vAddr, mem[0], mem[1], mem[2], mem[3]);
 }
+
+typedef void (*op_t)(c8 *mem, s32 vAddr);
+
+static void do_op(const c8 *name, op_t op, const c8 *wanted, s32 vAddr)
+{
+  c8 mem[4] = { 'i', 'j', 'k', 'l' };
+  s32 i;
+  op(mem, vAddr);
+  printf("%s vAddr %d: %c %c %c %c\n", name, vAddr, mem[0], mem[1], mem[2], mem[3]);
+  for (i = 0; i < 4; i++)
+  {
+    if (mem[i] != wanted[i])
+    {
+      printf("error @ %d\n", i);
+    }
+  }
+}
+
+#define DO_OP(_n)                  \
+  do_op(#_n, _n, mem_ ## _n[0], 0); \
+  do_op(#_n, _n, mem_ ## _n[1], 1); \
+  do_op(#_n, _n, mem_ ## _n[2], 2); \
+  do_op(#_n, _n, mem_ ## _n[3], 3); \
+  printf("\n");
 
 void test_swl_swr(void)
 {
-  printf("swl le\n");
-  swl_le(0);
-  swl_le(1);
-  swl_le(2);
-  swl_le(3);
-
-  printf("swl be\n");
-  swl_be(0);
-  swl_be(1);
-  swl_be(2);
-  swl_be(3);
-
-  printf("swr le\n");
-  swr_le(0);
-  swr_le(1);
-  swr_le(2);
-  swr_le(3);
-
-  printf("swr be\n");
-  swr_be(0);
-  swr_be(1);
-  swr_be(2);
-  swr_be(3);
+  DO_OP(swl_le);
+  DO_OP(swl_be);
+  DO_OP(swr_le);
+  DO_OP(swr_be);
 }
