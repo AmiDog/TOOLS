@@ -16,7 +16,7 @@ CPR=$(CP) -r
 RM=rm -rf
 
 # object
-OBJFILE=$(addprefix obj/, lwl_lwr.o)
+OBJFILE=$(addprefix obj/, lwl_lwr.o swl_swr.o main.o)
 
 # binary
 BINFILE=bin/mips.exe

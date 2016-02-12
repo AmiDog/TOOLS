@@ -2,15 +2,11 @@
  * lwl_lwr
  */
 
-#include "types.h"
+#include "main.h"
 
-static const c8 data_be[5][12] =
+static const c8 mem_be[4] =
 {
-  { '0', '1', '2', '3', 'I', 'J', 'K', 'L', '4', '5', '6', '7' },
-  { '0', '1', '2', '3', '4', 'I', 'J', 'K', 'L', '5', '6', '7' },
-  { '0', '1', '2', '3', '4', '5', 'I', 'J', 'K', 'L', '6', '7' },
-  { '0', '1', '2', '3', '4', '5', '6', 'I', 'J', 'K', 'L', '7' },
-  { '0', '1', '2', '3', '4', '5', '6', '7', 'I', 'J', 'K', 'L' }
+  'I', 'J', 'K', 'L'
 };
 
 static const c8 reg_lwl_be[4][4] =
@@ -27,7 +23,7 @@ static void lwl_be(s32 vAddr)
   s32 i, j;
   for (j = 0, i = vAddr; i <= 3; j++, i++)
   {
-    reg[j] = data_be[0][4 + i];
+    reg[j] = mem_be[i];
   }
   printf("vAddr %d: %c %c %c %c\n", vAddr, reg[0], reg[1], reg[2], reg[3]);
 }
@@ -46,18 +42,14 @@ static void lwr_be(s32 vAddr)
   s32 i, j;
   for (j = (3 - vAddr), i = 0; i <= vAddr; j++, i++)
   {
-    reg[j] = data_be[0][4 + i];
+    reg[j] = mem_be[i];
   }
   printf("vAddr %d: %c %c %c %c\n", vAddr, reg[0], reg[1], reg[2], reg[3]);
 }
 
-static const c8 data_le[5][12] =
+static const c8 mem_le[4] =
 {
-  { '0', '1', '2', '3', 'L', 'K', 'J', 'I', '4', '5', '6', '7' },
-  { '0', '1', '2', '3', '4', 'L', 'K', 'J', 'I', '5', '6', '7' },
-  { '0', '1', '2', '3', '4', '5', 'L', 'K', 'J', 'I', '6', '7' },
-  { '0', '1', '2', '3', '4', '5', '6', 'L', 'K', 'J', 'I', '7' },
-  { '0', '1', '2', '3', '4', '5', '6', '7', 'L', 'K', 'J', 'I' }
+  'L', 'K', 'J', 'I'
 };
 
 static const c8 reg_lwl_le[4][4] =
@@ -74,7 +66,7 @@ static void lwl_le(s32 vAddr)
   s32 i, j;
   for (j = 0, i = vAddr; i >= 0; j++, i--)
   {
-    reg[j] = data_le[0][4 + i];
+    reg[j] = mem_le[i];
   }
   printf("vAddr %d: %c %c %c %c\n", vAddr, reg[0], reg[1], reg[2], reg[3]);
 }
@@ -93,12 +85,12 @@ static void lwr_le(s32 vAddr)
   s32 i, j;
   for (j = vAddr, i = 3; i >= vAddr; j++, i--)
   {
-    reg[j] = data_le[0][4 + i];
+    reg[j] = mem_le[i];
   }
   printf("vAddr %d: %c %c %c %c\n", vAddr, reg[0], reg[1], reg[2], reg[3]);
 }
 
-int main(void)
+void test_lwl_lwr(void)
 {
   printf("lwl le\n");
   lwl_le(0);
@@ -123,6 +115,4 @@ int main(void)
   lwr_be(1);
   lwr_be(2);
   lwr_be(3);
-
-  return 0;
 }
