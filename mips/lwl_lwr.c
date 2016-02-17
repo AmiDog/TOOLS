@@ -67,7 +67,7 @@ static const c8 reg_lwr_be[4][4] =
 static void lwr_be(c8 *reg, s32 vAddr, const c8 *mem)
 {
   s32 i, j;
-  for (j = (3 - (vAddr & 3)), i = (vAddr & ~3); i <= vAddr; j++, i++)
+  for (j = 3, i = vAddr; i >= (vAddr & ~3); j--, i--)
   {
     reg[j] = mem[i];
   }
@@ -84,7 +84,7 @@ static const c8 reg_lwr_le[4][4] =
 static void lwr_le(c8 *reg, s32 vAddr, const c8 *mem)
 {
   s32 i, j;
-  for (j = (vAddr & 3), i = (vAddr | 3); i >= vAddr; j++, i--)
+  for (j = 3, i = vAddr; i <= (vAddr | 3); j--, i++)
   {
     reg[j] = mem[i];
   }
