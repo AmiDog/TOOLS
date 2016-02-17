@@ -9,6 +9,15 @@ static const c8 reg_be[4] =
   'E', 'F', 'G', 'H',
 };
 
+static const c8 reg_le[4] =
+{
+  'E', 'F', 'G', 'H',
+};
+
+/* SWL - EffAddr is the address of the most-significant of four consecutive
+ * bytes forming a word in memory starting at an arbitrary byte boundary.
+ */
+
 static const c8 mem_swl_be[4][4] =
 {
   { 'E', 'F', 'G', 'H' },
@@ -26,28 +35,6 @@ static void swl_be(c8 *mem, s32 vAddr)
   }
 }
 
-static const c8 mem_swr_be[4][4] =
-{
-  { 'H', 'j', 'k', 'l' },
-  { 'G', 'H', 'k', 'l' },
-  { 'F', 'G', 'H', 'l' },
-  { 'E', 'F', 'G', 'H' }
-};
-
-static void swr_be(c8 *mem, s32 vAddr)
-{
-  s32 i, j;
-  for (j = 0, i = (3 - vAddr); i <= 3; j++, i++)
-  {
-    mem[j] = reg_be[i];
-  }
-}
-
-static const c8 reg_le[4] =
-{
-  'E', 'F', 'G', 'H',
-};
-
 static const c8 mem_swl_le[4][4] =
 {
   { 'i', 'j', 'k', 'E' },
@@ -60,6 +47,27 @@ static void swl_le(c8 *mem, s32 vAddr)
 {
   s32 i, j;
   for (j = (3 - vAddr), i = 0; i <= vAddr; j++, i++)
+  {
+    mem[j] = reg_be[i];
+  }
+}
+
+/* SWR - EffAddr is the address of the least-significant of four consecutive
+ * bytes forming a word in memory starting at an arbitrary byte boundary.
+ */
+
+static const c8 mem_swr_be[4][4] =
+{
+  { 'H', 'j', 'k', 'l' },
+  { 'G', 'H', 'k', 'l' },
+  { 'F', 'G', 'H', 'l' },
+  { 'E', 'F', 'G', 'H' }
+};
+
+static void swr_be(c8 *mem, s32 vAddr)
+{
+  s32 i, j;
+  for (j = 0, i = (3 - vAddr); i <= 3; j++, i++)
   {
     mem[j] = reg_be[i];
   }
@@ -81,6 +89,8 @@ static void swr_le(c8 *mem, s32 vAddr)
     mem[j] = reg_be[i];
   }
 }
+
+/* TEST */
 
 typedef void (*op_t)(c8 *mem, s32 vAddr);
 

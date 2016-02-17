@@ -9,6 +9,15 @@ static const c8 mem_be[4] =
   'I', 'J', 'K', 'L'
 };
 
+static const c8 mem_le[4] =
+{
+  'L', 'K', 'J', 'I'
+};
+
+/* LWL - EffAddr is the address of the most-significant of four consecutive
+ * bytes forming a word in memory starting at an arbitrary byte boundary.
+ */
+
 static const c8 reg_lwl_be[4][4] =
 {
   { 'I', 'J', 'K', 'L' },
@@ -26,28 +35,6 @@ static void lwl_be(c8 *reg, s32 vAddr)
   }
 }
 
-static const c8 reg_lwr_be[4][4] =
-{
-  { 'e', 'f', 'g', 'I' },
-  { 'e', 'f', 'I', 'J' },
-  { 'e', 'I', 'J', 'K' },
-  { 'I', 'J', 'K', 'L' }
-};
-
-static void lwr_be(c8 *reg, s32 vAddr)
-{
-  s32 i, j;
-  for (j = (3 - vAddr), i = 0; i <= vAddr; j++, i++)
-  {
-    reg[j] = mem_be[i];
-  }
-}
-
-static const c8 mem_le[4] =
-{
-  'L', 'K', 'J', 'I'
-};
-
 static const c8 reg_lwl_le[4][4] =
 {
   { 'L', 'f', 'g', 'h' },
@@ -62,6 +49,27 @@ static void lwl_le(c8 *reg, s32 vAddr)
   for (j = 0, i = vAddr; i >= 0; j++, i--)
   {
     reg[j] = mem_le[i];
+  }
+}
+
+/* LWR - EffAddr is the address of the least-significant of four consecutive
+ * bytes forming a word in memory starting at an arbitrary byte boundary.
+ */
+
+static const c8 reg_lwr_be[4][4] =
+{
+  { 'e', 'f', 'g', 'I' },
+  { 'e', 'f', 'I', 'J' },
+  { 'e', 'I', 'J', 'K' },
+  { 'I', 'J', 'K', 'L' }
+};
+
+static void lwr_be(c8 *reg, s32 vAddr)
+{
+  s32 i, j;
+  for (j = (3 - vAddr), i = 0; i <= vAddr; j++, i++)
+  {
+    reg[j] = mem_be[i];
   }
 }
 
@@ -81,6 +89,8 @@ static void lwr_le(c8 *reg, s32 vAddr)
     reg[j] = mem_le[i];
   }
 }
+
+/* TEST */
 
 typedef void (*op_t)(c8 *reg, s32 vAddr);
 
